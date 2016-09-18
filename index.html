@@ -661,13 +661,156 @@ ver nas figuras abaixo o resultado do processamento.</p>
 <div class="sect1">
 <h2 id="_exercício_4_2">Exercício 4.2</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>Este exercício tem como finalidade melhorar o programa 'labeling.cpp', onde este lê uma imagen e soma a quantidade de objetos nela contida, para essa tarefa usei a imagem abaixo para melhorar o programa:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="bolhas.png" alt="bolha">
+</div>
+</div>
+<div class="paragraph">
+<p>As melhorias sugeridas foram as seguintes:
+&#8594;Fazer programa conseguir contar mais que 255 abjetos na cena.
+&#8594;Identificar objetos com e sem buracos.
+&#8594;Excluir bolhas que tocam as bordas da imagem.</p>
+</div>
+<div class="paragraph">
+<p>Para isso, o código abaixo foi desenvolvido.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include &lt;iostream&gt;
+#include &lt;opencv2/opencv.hpp&gt;
+#include &lt;iostream&gt;
 
+using namespace cv;
+using namespace std;
+
+int main(int argc, char** argv){
+
+  Mat image, image2;
+  int width, height, nobjects, buracos, contador;
+  CvPoint p;
+
+  image = imread(argv[1],CV_LOAD_IMAGE_GRAYSCALE);
+  if(!image.data){
+    std::cout &lt;&lt; "imagem nao carregou corretamente\n";
+    return(-1);
+  }
+
+  width=image.size().width;
+  height=image.size().height;
+  p.x=0;
+  p.y=0;
+  nobjects=0;
+  buracos=0;
+  /*Cada vez que a quantidade de objetos encontrados ultrapa_
+  ssar 255 o contador encrementarar e a variavel nobjects
+  voltara a ser igual a zero, assim ao final saberemos a
+  quantidade de objetos fazendo o seguinte cauculo:
+  nobjects = (255*contador + nobjects);*/
+  contador=0;
+
+  //Eliminando bolhas na borda
+  for(int i=0; i&lt;height; i++){
+    int a = image.at&lt;uchar&gt;(0,i);
+    int b = image.at&lt;uchar&gt;(255,i);
+    if(a == 255){
+      p.x=i;
+      p.y=0;
+      floodFill(image,p,nobjects);
+    }
+    if(b == 255){
+      p.x=i;
+      p.y=255;
+      floodFill(image,p,nobjects);
+    }
+  }
+  for(int i=0; i&lt;width; i++){
+    int a = image.at&lt;uchar&gt;(i,0);
+    int b = image.at&lt;uchar&gt;(i,255);
+    if(a == 255){
+      p.x=0;
+      p.y=i;
+      floodFill(image,p,nobjects);
+    }
+    if(b == 255){
+      p.x=255;
+      p.y=i;
+      floodFill(image,p,nobjects);
+    }
+  }
+
+  //Marcando as manchas. E manchas com buracos
+  for(int i=0; i&lt;height; i++){
+    for(int j=0; j&lt;width; j++){
+      if(image.at&lt;uchar&gt;(i,j) == 255){
+        // achou um objeto
+        nobjects++;
+        if(nobjects==255){
+          contador++;
+          nobjects=0;
+        }
+        p.x=j;
+        p.y=i;
+        floodFill(image,p,nobjects);
+      }
+      //achou um objeto com buraco
+      if(image.at&lt;uchar&gt;(i,j)!=0 &amp;&amp; image.at&lt;uchar&gt;(i,j)!=255 &amp;&amp; image.at&lt;uchar&gt;(i,j)!=100){
+        if(image.at&lt;uchar&gt;(i,j-1) == 0){
+          p.x=j-1;
+          p.y=i;
+          floodFill(image,p,100);
+          buracos++;
+        }
+      }
+    }
+  }
+
+  p.x=0;
+  p.y=0;
+  floodFill(image,p,0);
+  buracos--;
+  nobjects = (255*contador + nobjects);
+
+  cout&lt;&lt;"A imagem contem "&lt;&lt;nobjects-buracos&lt;&lt;" objetos sem buracos."&lt;&lt;endl;
+  cout&lt;&lt;"E contem "&lt;&lt;buracos&lt;&lt;" objetos com buraco."&lt;&lt;endl;
+  imshow("image", image);
+  waitKey();
+
+  return 0;
+}</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Para resolver o primeiro problema mensionado: Cada vez que a quantidade de objetos encontrados ultrapassar 255 o contador encrementarar e a variavel nobjects voltara a ser igual a zero, assim ao final saberemos a quantidade de objetos fazendo o seguinte cauculo: nobjects = (255*contador + nobjects).</p>
+</div>
+<div class="paragraph">
+<p>Para o segundo problema: Se deve percorrer a imagem, e se chegarmos a pixels que pertenção a im objeto, verifica-se seu pixel a esquerda, se ele não é branco(valor 255) nem preto(valor 0), então é um buraco dentro de um objeto, então chama-se a função 'floodFill()' para marcar o buravo, e incrementa-se a variavel 'buracos', e para saber a quantidade de objetos sem buracos, se diminui a quantidade total de objetos da quantidade que possui buracos.</p>
+</div>
+<div class="paragraph">
+<p>E para o terceiro problema: Percorre-se as bordas, e toda vez que um objetos for encontrado, chama-se a função 'floodFill()' para pintar o objetos com o valor de fundo da imagem, assim este ficando invisível para contagem.</p>
+</div>
+<div class="paragraph">
+<p>O resultado deste programa podemos ver nas imagen abaixo:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="Qbolhas.png" alt="qbolhas">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="result.png" alt="result">
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-09-12 20:58:05 BRT
+Last updated 2016-09-18 02:04:48 BRT
 </div>
 </div>
 </body>
