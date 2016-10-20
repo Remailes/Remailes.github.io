@@ -797,7 +797,7 @@ int main(int argc, char** argv){
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="Q_bolhas.png" alt="qbolhas">
+<img src="Qbolhas.png" alt="qbolhas">
 </div>
 </div>
 <div class="imageblock">
@@ -805,12 +805,128 @@ int main(int argc, char** argv){
 <img src="result.png" alt="result">
 </div>
 </div>
+<div class="sect2">
+<h3 id="_exercício_8_2">Exercício 8.2</h3>
+
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_filtro_homomórfico">Filtro Homomórfico</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_exercício_11_1">Exercício 11.1</h3>
+<div class="paragraph">
+<p>esta atividade tem como objetivo melhorar o programa 'pontilhismo.cpp' fazendo uso das bordas fornecidas pelo algorítmo de canny. Para o programa foi utilizada a imagem abaixo para ser inserido os efeitos.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="Arara.jpg" alt="passaro">
+</div>
+</div>
+<div class="paragraph">
+<p>O código usado para a tarefa podemos var logo abaixo, e logo após a descrissão do programa:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#include &lt;iostream&gt;
+#include &lt;opencv2/opencv.hpp&gt;
+#include &lt;fstream&gt;
+#include &lt;iomanip&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;numeric&gt;
+#include &lt;ctime&gt;
+#include &lt;cstdlib&gt;
+
+using namespace std;
+using namespace cv;
+#define STEP 8
+#define JITTER 4
+#define RAIO 5
+
+int main(int argc, char**argv){
+
+	Mat image, border, points, efeito;
+	int x, y, gray, width, height;
+	vector&lt;int&gt; yrange;
+	vector&lt;int&gt; xrange;
+	srand(time(0));
+
+	image = imread("arara.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	width = image.size().width;
+	height = image.size().height;
+	xrange.resize(height/STEP);
+	yrange.resize(width/STEP);
+	iota(xrange.begin(), xrange.end(), 0);
+	iota(yrange.begin(), yrange.end(), 0);
+
+	for(uint i=0; i&lt;xrange.size(); i++){
+		xrange[i]= xrange[i]*STEP+STEP/2;
+	}
+
+	for(uint i=0; i&lt;yrange.size(); i++){
+		yrange[i]= yrange[i]*STEP+STEP/2;
+	}
+
+	points = Mat(height, width, CV_8U, Scalar(255));
+	efeito = Mat(height, width, CV_8U, Scalar(255));
+	random_shuffle(xrange.begin(), xrange.end());
+
+	image.copyTo(efeito);
+
+	for(auto i : xrange){
+		random_shuffle(yrange.begin(), yrange.end());
+		for(auto j : yrange){
+			x = i+rand()%(2*JITTER)-JITTER+1;
+			y = j+rand()%(2*JITTER)-JITTER+1;
+			gray = image.at&lt;uchar&gt;(x,y);
+			circle(points, cv::Point(y,x), RAIO, CV_RGB(gray,gray,gray), -1, CV_AA);
+		}
+	}
+	imwrite("pontilhismo.jpg", points);
+
+	int Limiar = 25;
+	int raio = 6;
+	for(int k=0; k&lt;6; k++){
+		Canny(image, border, Limiar, 3*Limiar);
+		raio--;
+		for(int i=0; i&lt;height; i++){
+			for(int j=0; j&lt;width; j++){
+				if(border.at&lt;uchar&gt;(i,j) == 255){
+					gray = image.at&lt;uchar&gt;(i,j);
+					circle(efeito, cv::Point(j,i), raio, CV_RGB(gray,gray,gray), -1, CV_AA);
+				}
+			}
+		}
+		Limiar = Limiar*10;
+	}
+	imwrite("imprecionismo.jpg", efeito);
+
+	return 0;
+}</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>O programa tem como entrada uma imagem qualquer, e como saída é gereda e salva duas imagens editadas, onde a primeira(pontilhismo.jpg) é a imagem com efeito de pontilhismo aplicado, aqui simplismente foi repetido um trexo do programa 'pontilhismo.cpp'. Já para a outra imagem de saída, como sugerido na descrição da atividade, foi feito um loop de 6 iterações, onde para cada iteração é gerada uma imagem auxiliar de bordas da imagem original utilizando o algoritmo de canny, e para cada iteração é aplicado o efeito de pontilhismo usando para os circulos um raio menor para cada iteração. Os resultados vemos nas figuras abaixo, onde a primeira é a imagem com pontilhismo,  e a seguda é o melhoramento do efeito pontilhismo.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="Pontilhismo.jpg" alt="pontilhismo">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="Imprecionismo.jpg" alt="imprecionismo">
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-09-18 02:04:48 BRT
+Last updated 2016-10-20 21:09:10 BRST
 </div>
 </div>
 </body>
